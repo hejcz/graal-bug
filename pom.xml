@@ -9,10 +9,11 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <graal.version>21.1.0</graal.version>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+        <graal.version>20.3.3</graal.version>
         <new-junit.version>5.7.0</new-junit.version>
+        <compiler.dir>${project.build.directory}/compiler</compiler.dir>
     </properties>
 
     <dependencies>
@@ -39,5 +40,71 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.1</version>
+                <configuration>
+                    <argLine>-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI --module-path=${compiler.dir}
+                        --upgrade-module-path=${compiler.dir}/compiler.jar:${compiler.dir}/compiler-management.jar
+                    </argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.10</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.graalvm.compiler</groupId>
+                                    <artifactId>compiler</artifactId>
+                                    <version>${graal.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <destFileName>compiler.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.graalvm.compiler</groupId>
+                                    <artifactId>compiler-management</artifactId>
+                                    <version>${graal.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <destFileName>compiler-management.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.graalvm.truffle</groupId>
+                                    <artifactId>truffle-api</artifactId>
+                                    <version>${graal.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <destFileName>truffle-api.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.graalvm.sdk</groupId>
+                                    <artifactId>graal-sdk</artifactId>
+                                    <version>${graal.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <destFileName>graal-sdk.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${compiler.dir}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 
 </project>
